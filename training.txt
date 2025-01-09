@@ -1,0 +1,27 @@
+clear all 
+close all 
+warning off 
+g = alexnet; 
+layers = g.Layers; 
+allImages 
+= 
+imageDatastore('asl_dataset/', 
+'IncludeSubfolders', true, 'LabelSource', 'foldernames'); 
+numClasses = numel(categories(allImages.Labels)); 
+layers(23) = fullyConnectedLayer(numClasses);   
+layers(25) = classificationLayer; 
+allImages.ReadFcn = @(filename) 
+preprocessAndResize(imread(filename)); 
+opts = trainingOptions('sgdm', 'InitialLearnRate', 0.001, 
+'MaxEpochs', 20, 'MiniBatchSize', 64); 
+myNet1 = trainNetwork(allImages, layers, opts); 
+save myNet1; 
+function imgOut = preprocessAndResize(img) 
+    img = imresize(img, [227 227]); 
+    imgGray = rgb2gray(img); 
+    threshold = graythresh(imgGray); 
+    imgBinary = imbinarize(imgGray, threshold); 
+    imgEqualized = histeq(imgGray); 
+    imgGaussianFiltered = imgaussfilt(imgGray, 2); 
+    imgEdges = edge(imgGray, 'sobel'); 
+    img
